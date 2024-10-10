@@ -1,0 +1,75 @@
+data: file is CESAR03.dat;
+variable: names are ID repko konzept sample male leiter;
+missing = all(9999);
+
+grouping = sample(1 = Saar 2 = Kaiser 3 = ETHEnvi 4 = ETHPhys);
+
+usevariables = repko konzept;
+
+analysis:
+bootstrap = 10000;
+model:
+
+repko_l BY repko;
+repko@0;
+repko_l@1;
+
+konz_l BY konzept;
+konzept@0;
+konz_l@1;
+
+repko_l WITH konz_l;
+
+MODEL Saar:
+
+repko_l BY repko;
+repko@0;
+repko_l@1;
+
+konz_l BY konzept;
+konzept@0;
+konz_l@1;
+
+repko_l WITH konz_l;
+
+MODEL Kaiser:
+
+repko_l BY repko;
+repko@0;
+repko_l@1;
+
+konz_l BY konzept;
+konzept@0;
+konz_l@1;
+
+repko_l WITH konz_l;
+
+MODEL ETHEnvi:
+
+repko_l BY repko;
+repko@0;
+repko_l@1;
+
+konz_l BY konzept;
+konzept@0;
+konz_l@1;
+
+repko_l WITH konz_l;
+
+MODEL ETHPhys:
+
+repko_l BY repko;
+repko@0;
+repko_l@1;
+
+konz_l BY konzept;
+konzept@0;
+konz_l@1;
+
+repko_l WITH konz_l;
+
+
+
+output: tech1 residual stdyx cinterval(bcbootstrap);
+
+

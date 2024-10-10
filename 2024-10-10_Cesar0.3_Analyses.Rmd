@@ -1,0 +1,1727 @@
+
+---
+title: "The Relation between Representational Competence and Conceptual Knowledge in Physics"
+output: 
+  html_document: 
+    df_print: default
+    highlight: espresso
+    keep_md: yes
+    smart: no
+    theme: spacelab
+editor_options: 
+  chunk_output_type: console
+---
+author: ""
+output:
+  html_document:
+    theme: cerulean
+encoding: UTF-8
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+pre {
+  overflow-x: auto;
+}
+pre code {
+  word-wrap: normal;
+  white-space: pre;
+}
+</style>
+
+---
+
+# {.tabset}
+
+```{r}
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+library(readxl)
+library(tidyverse)
+library(foreign)
+library(tidyverse)
+library(GGally)
+library(lavaan)
+library(TAM)
+library(WrightMap)
+library(psych)
+library(tidyLPA)
+library(magrittr)
+#library(cluster)
+#library(factoextra)
+#library(writexl)
+library(readxl)
+#library(ShinyItemAnalysis)
+library(MplusAutomation)
+#library(confintr)
+library(DescTools)
+
+##set manual ggally-options for plotting
+my_descriptivesfunction <- function(data, mapping, ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+    geom_point(position = position_jitter(), shape = 21, colour = "blue2", fill = "white") + 
+    geom_smooth(method = loess, fill = "red", color="darkblue", se = FALSE, ...) +
+    geom_smooth(method = lm, fill="blue", color = "darkred", ...)
+  p
+}
+
+
+theme_pety <- function(base_size = 10, base_family = "") {
+  theme(text = element_text(size = 16), #Larger text font size
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(colour="black"), #x-Axis text colour
+        axis.text.y = element_text(colour="black")) #y-Axis text colour
+}
+
+load("CESAR03.Rdata")
+
+table(CESAR03$TeacherEd_MINT)
+
+#RQ1: Do we find correlations in all samples?
+
+#Sample 1: Teacher education Saarbrücken
+CESAR03 %>% filter(subsample == "1") %>% select(Repko_score, Konzept_score) %>% cor() #.37
+#Sample 2: TU Kaiserslautern Mech Eng, Elec Eng a.o.
+CESAR03 %>% filter(subsample == "2") %>% select(Repko_score, Konzept_score) %>% cor() #.58
+#Sample 3: ETH Zurich; Environmental Sciences a.o.
+CESAR03 %>% filter(subsample == "3") %>% select(Repko_score, Konzept_score) %>% cor() #.36
+#Sample 4: ETH Zurich; Physics a.o.
+CESAR03 %>% filter(subsample == "4") %>% select(Repko_score, Konzept_score) %>% cor() #.55
+
+CESAR03 %>%
+  mutate(Sample = fct_recode(factor(subsample),
+                             "Teacher Education SU" = "1",
+                             "Engineering TUK" = "2",
+                             "Environmental Science ETH" = "3",
+                             "Physics ETH" = "4")) %>%
+  ggplot(aes(x = Repko_score, y = Konzept_score)) +
+  geom_point(position = position_jitter(width = 0.2, height = 0.2), color = "darkblue", shape = 21, fill = "white") +
+  geom_smooth(method = "lm") +
+
+  geom_smooth(color = "darkred", size = 1, se = FALSE, span = 0.75) +
+  scale_y_continuous("Conceptual knowledge (max. = 12)",
+                     limits = c(-1, 13),
+                     breaks = c(0, 2, 4, 6, 8, 10, 12)) +
+  scale_x_continuous("Representational competence (max. = 12)",
+                     limits = c(-1, 13),
+                     breaks = c(0, 2, 4, 6, 8, 10, 12)) +
+  theme_pety() +
+  theme(legend.position = "none") +
+  theme(panel.background = element_rect(fill = "white")) +
+  facet_wrap(~ Sample)
+
+ggsave("RQ1_Scatter_persample.jpg", width = 8, height = 6, dpi = 450)
+
+#RQ3: Export data object with focal profile variables and covariates for latent profile analyses via MplusAutomation
+CESAR03 %>% select(ID, Repko_score, Konzept_score,
+             subsample, male, leit_exp, Teacherstudent, MINT) %>%
+  mutate(Teacherstudent = as.character(fct_recode(Teacherstudent,
+                                     "0" = "Non-TeachEd",
+                                     "1" = "TeachEd")),
+         MINT = as.character(fct_recode(MINT,
+                                        "0" = "Non-MINT",
+                                        "1" = "MINT"))) %>%
+  write.table("CESAR03.dat", sep = "\t", row.names = FALSE, col.names = FALSE, na = "9999")
+
+```
+
+## Analyses paper
+
+Research questions 1-2:
+See Mplus inputs and outputs
+
+Research questions 3-5:
+
+(3) To what degree do latent profiles of representational competence and conceptual knowledge show similar or different patterns across the four different samples?
+(4) To what degree is the pattern of low representational competence but high conceptual knowledge, but not vice versa, visible in all four samples?
+(5) Do gender, topic-specific learning opportunities, and individual preferences for specific learning content (as reflected in the choice of study program) explain differences and similarities between the four samples?
+
+
+## RQ3 Latent Profile Analysis
+
+```{r RQ3.LPA}
+
+LPARQ3 <- '
+
+[[init]]
+iterators = c s;
+c = 1:7;
+s = 1:4;
+
+filename = "RQ3_LPA_[[c]]profiles_sample[[s]].inp";
+outputDirectory = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA/sample[[s]]/";
+
+[[/init]]
+
+TITLE:
+CESAR03_RQ3_LPA_[[c]]profiles_sample[[s]]
+
+DATA:
+FILE IS
+"C:/local user data/CESAR0.3/Analysis_R/CESAR03.dat";
+
+VARIABLE:
+
+NAMES =
+ID
+Repko
+Konzept
+sample
+male
+leit_exp
+teacher
+MINT
+;
+
+USEVARIABLES ARE
+repko konzept
+;
+
+useobservations are sample == [[s]];
+
+[[c > 1]]
+
+[[s < 3]]
+
+AUXILIARY = ID
+male (DCAT)
+leit_exp (DCAT)
+teacher (DCAT)
+MINT (DCAT)
+;
+
+[[/s < 3]]
+
+[[s > 2]]
+!not teacher because no variation
+AUXILIARY = ID
+male (DCAT)
+leit_exp (DCAT)
+MINT (DCAT)
+;
+
+[[/s > 2]]
+
+
+
+[[/c > 1]]
+
+CLASSES = c([[c]]);
+
+MISSING = all(9999);
+
+ANALYSIS:
+
+TYPE = mixture;
+STARTS 1000 400;
+PROCESS = 4 1;
+
+MODEL:
+
+%c#1%
+[repko*] (m1);
+[konzept*] (m2);
+repko* (v1);
+konzept* (v2);
+
+[[c > 1]]
+
+%c#2%
+[repko*] (m3);
+[konzept*] (m4);
+repko* (v3);
+konzept* (v4);
+
+[[/c > 1]]
+
+[[c > 2]]
+
+%c#3%
+[repko*] (m5);
+[konzept*] (m6);
+repko* (v5);
+konzept* (v6);
+
+[[/c > 2]]
+
+[[c > 3]]
+
+%c#4%
+[repko*] (m7);
+[konzept*] (m8);
+repko* (v7);
+konzept* (v8);
+
+[[/c > 3]]
+
+[[c > 4]]
+
+%c#5%
+[repko*] (m9);
+[konzept*] (m10);
+repko* (v9);
+konzept* (v10);
+
+[[/c > 4]]
+
+[[c > 5]]
+
+%c#6%
+[repko*] (m11);
+[konzept*] (m12);
+repko* (v11);
+konzept* (v12);
+
+[[/c > 5]]
+
+[[c > 6]]
+
+%c#7%
+[repko*] (m13);
+[konzept*] (m14);
+repko* (v13);
+konzept* (v14);
+
+[[/c > 6]]
+
+OUTPUT: sampstat residual tech1 tech11 tech14;
+
+plot:
+type is plot1 plot2 plot3;
+series is repko (1) konzept (2);
+
+'
+
+```
+
+###Run analyses of created models 
+
+```{r run.dataanalyses}
+
+#Write template into textfile
+write(LPARQ3, file = "LPA_RQ3.txt")
+
+#Write Mplus input files based on template for all 30 combinations of N, E, missingdata(attrition).
+createModels("LPA_RQ3.txt")
+
+#Run Mplus input files
+runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA/sample4", recursive = TRUE)
+
+```
+
+### Inspect results
+
+```{r LPA.results}
+
+RQ3_LPAs_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
+
+# Create a data frame with each model's summaries
+all_fit_stats <- map_df(RQ3_LPAs_outputs, ~ .x$summaries, .id = "model_sample")
+
+# Assuming you might want to split model_sample into separate 'model' and 'sample' columns
+all_fit_stats <- all_fit_stats %>%
+  mutate(model = sub("_.*", "", model_sample), # Adjust regex according to your naming convention
+         Sample = sub(".*_", "", model_sample)) %>%
+  select(Observations, Parameters:AICC, Entropy, T11_VLMR_PValue, BLRT_PValue, Sample, -LLCorrectionFactor) %>%
+  mutate(Profiles = rep(c(1:7), 4)) %>%
+  mutate(
+    AIC = 2 * Parameters - 2 * LL,
+    BIC = log(Observations) * Parameters - 2 * LL,
+    aBIC = log((Observations + 2) / 24) * Parameters - 2 * LL,
+    AIC3 = 3 * Parameters - 2 * LL,
+    CAIC = log(Observations) * Parameters - 2 * LL + Parameters,
+    AICC = AIC + (2 * Parameters^2 + 2 * Parameters) / (Observations - Parameters - 1)
+  )
+
+# Convert the data frame to long format
+all_fit_stats_long <- pivot_longer(all_fit_stats,
+                                   cols = -c(Profiles, Sample, Observations, Parameters),
+                                   names_to = "statistic", 
+                                   values_to = "value")
+
+# View the resulting long format data frame
+print(all_fit_stats_long)
+
+all_fit_stats_long %>%
+  filter(statistic == "AIC" | statistic == "BIC" | statistic == "AIC3" | statistic == "BIC" | statistic == "aBIC" | statistic == "CAIC") %>%
+  mutate(Sample = fct_recode(factor(Sample),
+                             "Teacher Education SU" = "sample1.out",
+                             "Engineering TUK" = "sample2.out",
+                             "Environmental Science ETH" = "sample3.out",
+                             "Physics ETH" = "sample4.out")) %>%
+  ggplot(aes(x = Profiles, y = value, group = statistic, shape = statistic, color = statistic)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ Sample, scales = "free") +
+  theme_bw() +
+  scale_color_manual(values = palette())
+
+ggsave("RQ3_Fit.jpg", width = 6, height = 4, dpi = 450)
+
+# Create a data frame with each model's summaries
+map_df(RQ3_LPAs_outputs, ~ .x$parameters$unstandardized, .id = "model_sample") %>%
+  filter(paramHeader == "Means") %>%
+  filter(param == "KONZEPT" | param == "REPKO") %>%
+  mutate(Sample = sub(".*_", "", model_sample)) %>%
+ mutate(param = fct_recode(param,
+                            "Representational\nCompetence" = "REPKO",
+                            "Conceptual\nKnowledge" = "KONZEPT")) %>%
+  mutate(Sample = fct_recode(factor(Sample),
+                             "Teacher Education SU" = "sample1.out",
+                             "Engineering TUK" = "sample2.out",
+                             "Environmental Science ETH" = "sample3.out",
+                             "Physics ETH" = "sample4.out")) %>%
+  filter(str_detect(model_sample, "3profiles")) %>%
+  mutate(param = fct_relevel(param,
+                             c("REPKO", "KONZEPT"))) %>%
+  ggplot(aes(x = param, y = est, group = LatentClass)) +
+  geom_line(position = position_dodge(width = 0.05)) +
+  geom_point(position = position_dodge(width = 0.05)) +
+  geom_errorbar(aes(ymin = est -1.68*se, ymax = est + 1.68*se), width = 0.1,
+                position = position_dodge(width = 0.05)) +
+  facet_wrap(~ Sample) +
+  theme_bw() +
+  scale_color_manual(values = palette()) +
+  xlab("") +
+  scale_y_continuous(limits = c(0, 12),
+                     breaks = seq(0, 12, 2)) +
+  ylab("Estimate +- 90% CI") +
+  theme(legend.position = "none")
+
+
+ggsave("RQ3_Profiles.jpg", width = 6, height = 4, dpi = 450)
+# 
+# #Profile sizes
+# map_df(RQ3_LPAs_outputs, ~ .x$parameters$unstandardized, .id = "model_sample") %>%
+#   filter(str_detect(model_sample, "3profiles")) %>%
+#   filter(param == "C#1" |param == "C#2") %>%
+#   mutate(Sample = sub(".*_", "", model_sample)) %>%
+#   mutate(Sample = fct_recode(factor(Sample),
+#                              "Teacher Education SU" = "sample1.out",
+#                              "Engineering TUK" = "sample2.out",
+#                              "Environmental Science ETH" = "sample3.out",
+#                              "Physics ETH" = "sample4.out")) %>%
+#   select(est, param, Sample) %>%
+#   mutate(est = plogis(est)) %>%
+#   pivot_wider(values_from = c("est"), names_from = "param") %>%
+#   mutate(`C#3` = 1 - `C#1` - `C#2`) %>%
+#   pivot_longer(c(`C#1`, `C#2`, `C#3`))
+#   
+# map_df(RQ3_LPAs_outputs, ~ .x$class_counts)
+
+```
+
+
+
+
+```{r RQ3.LPA.MG}
+
+LPARQ3_MG <- '
+
+[[init]]
+iterators = c;
+c = 1:7;
+
+filename = "RQ3_LPA_Multigroup_[[c]]profiles.inp";
+outputDirectory = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup/";
+
+[[/init]]
+
+TITLE:
+CESAR03_RQ3_LPA_Multigroup_[[c]]profiles
+
+DATA:
+FILE IS
+"C:/local user data/CESAR0.3/Analysis_R/CESAR03.dat";
+
+VARIABLE:
+
+NAMES =
+ID
+Repko
+Konzept
+sample
+male
+leit_exp
+teacher
+MINT
+;
+
+USEVARIABLES ARE
+repko konzept
+;
+
+CLASSES = s(4) c([[c]]);
+knownclass = s(sample = 1 sample = 2 sample = 3 sample = 4);
+
+MISSING = all(9999);
+
+ANALYSIS:
+
+TYPE = mixture;
+STARTS 1000 400;
+PROCESS = 4 1;
+
+MODEL:
+
+%OVERALL%
+
+C ON S;
+
+%s#1.c#1%
+
+[repko*] (s1m1);
+[konzept*] (s1m2);
+repko* (s1v1);
+konzept* (s1v2);
+
+%s#2.c#1%
+
+[repko*] (s2m1);
+[konzept*] (s2m2);
+repko* (s2v1);
+konzept* (s2v2);
+
+%s#3.c#1%
+
+[repko*] (s3m1);
+[konzept*] (s3m2);
+repko* (s3v1);
+konzept* (s3v2);
+
+%s#4.c#1%
+
+[repko*] (s4m1);
+[konzept*] (s4m2);
+repko* (s4v1);
+konzept* (s4v2);
+
+[[c > 1]]
+
+%s#1.c#2%
+
+[repko*] (s1m3);
+[konzept*] (s1m4);
+repko* (s1v3);
+konzept* (s1v4);
+
+%s#2.c#2%
+
+[repko*] (s2m3);
+[konzept*] (s2m4);
+repko* (s2v3);
+konzept* (s2v4);
+
+%s#3.c#2%
+
+[repko*] (s3m3);
+[konzept*] (s3m4);
+repko* (s3v3);
+konzept* (s3v4);
+
+%s#4.c#2%
+
+[repko*] (s4m3);
+[konzept*] (s4m4);
+repko* (s4v3);
+konzept* (s4v4);
+
+[[/c > 1]]
+
+[[c > 2]]
+
+%s#1.c#3%
+
+[repko*] (s1m5);
+[konzept*] (s1m6);
+repko* (s1v5);
+konzept* (s1v6);
+
+%s#2.c#3%
+
+[repko*] (s2m5);
+[konzept*] (s2m6);
+repko* (s2v5);
+konzept* (s2v6);
+
+%s#3.c#3%
+
+[repko*] (s3m5);
+[konzept*] (s3m6);
+repko* (s3v5);
+konzept* (s3v6);
+
+%s#4.c#3%
+
+[repko*] (s6m5);
+[konzept*] (s6m6);
+repko* (s6v5);
+konzept* (s6v6);
+
+[[/c > 2]]
+
+[[c > 3]]
+
+%s#1.c#4%
+
+[repko*] (s1m7);
+[konzept*] (s1m8);
+repko* (s1v7);
+konzept* (s1v8);
+
+%s#2.c#4%
+
+[repko*] (s2m7);
+[konzept*] (s2m8);
+repko* (s2v7);
+konzept* (s2v8);
+
+%s#3.c#4%
+
+[repko*] (s3m7);
+[konzept*] (s3m8);
+repko* (s3v7);
+konzept* (s3v8);
+
+%s#4.c#4%
+
+[repko*] (s6m7);
+[konzept*] (s6m8);
+repko* (s6v7);
+konzept* (s6v8);
+
+[[/c > 3]]
+
+[[c > 4]]
+
+%s#1.c#5%
+
+[repko*] (s1m9);
+[konzept*] (s1m10);
+repko* (s1v9);
+konzept* (s1v10);
+
+%s#2.c#5%
+
+[repko*] (s2m9);
+[konzept*] (s2m10);
+repko* (s2v9);
+konzept* (s2v10);
+
+%s#3.c#5%
+
+[repko*] (s3m9);
+[konzept*] (s3m10);
+repko* (s3v9);
+konzept* (s3v10);
+
+%s#4.c#5%
+
+[repko*] (s6m9);
+[konzept*] (s6m10);
+repko* (s6v9);
+konzept* (s6v10);
+
+[[/c > 4]]
+
+[[c > 5]]
+
+%s#1.c#6%
+
+[repko*] (s1m11);
+[konzept*] (s1m12);
+repko* (s1v11);
+konzept* (s1v12);
+
+%s#2.c#6%
+
+[repko*] (s2m11);
+[konzept*] (s2m12);
+repko* (s2v11);
+konzept* (s2v12);
+
+%s#3.c#6%
+
+[repko*] (s3m11);
+[konzept*] (s3m12);
+repko* (s3v11);
+konzept* (s3v12);
+
+%s#4.c#6%
+
+[repko*] (s6m11);
+[konzept*] (s6m12);
+repko* (s6v11);
+konzept* (s6v12);
+
+
+[[/c > 5]]
+
+[[c > 6]]
+
+%s#1.c#7%
+
+[repko*] (s1m13);
+[konzept*] (s1m14);
+repko* (s1v13);
+konzept* (s1v14);
+
+%s#2.c#7%
+
+[repko*] (s2m13);
+[konzept*] (s2m14);
+repko* (s2v13);
+konzept* (s2v14);
+
+%s#3.c#7%
+
+[repko*] (s3m13);
+[konzept*] (s3m14);
+repko* (s3v13);
+konzept* (s3v14);
+
+%s#4.c#7%
+
+[repko*] (s6m13);
+[konzept*] (s6m14);
+repko* (s6v13);
+konzept* (s6v14);
+
+[[/c > 6]]
+
+OUTPUT: sampstat residual tech1;
+
+plot:
+type is plot1 plot2 plot3;
+series is repko (1) konzept (2);
+
+'
+
+```
+
+### RQ3 LPA MG: Run analyses of created models MG
+
+```{r run.dataanalyses.MG}
+
+#Write template into textfile
+write(LPARQ3_MG, file = "LPA_RQ3_MG.txt")
+
+#Write Mplus input files based on template for all 30 combinations of N, E, missingdata(attrition).
+createModels("LPA_RQ3_MG.txt")
+
+#Run Mplus input files
+runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup/", recursive = TRUE)
+
+```
+
+### RQ3 LPA MG: Inspect results
+
+```{r LPA.results.MG}
+
+RQ3_LPAs_MG_3output <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup/rq3_lpa_multigroup_3profiles.out", what = c("summaries", "parameters", "class_counts", "lcCondMeans"))
+RQ3_LPAs_MG_3output #Fit indices
+
+# Create a data frame with each model's summaries
+RQ3_LPAs_MG_3output$parameters$unstandardized %>%
+  filter(paramHeader == "Means") %>%
+  filter(param == "KONZEPT" | param == "REPKO") %>%
+  mutate(param = fct_relevel(param,
+                             c("REPKO", "KONZEPT"))) %>%
+ mutate(param = fct_recode(param,
+                            "Representational Competence" = "REPKO",
+                            "Conceptual Knowledge" = "KONZEPT")) %>%
+  mutate(Sample = substr(LatentClass, 1, 1),
+         Profile = substr(LatentClass, 3, 3)) %>%
+    mutate(Sample = fct_recode(factor(Sample),
+                             "Teacher Education SU" = "1",
+                             "Engineering TUK" = "2",
+                             "Environmental Science ETH" = "3",
+                             "Physics ETH" = "4")) %>%
+  ggplot(aes(x = param, y = est, group = LatentClass, color = Sample, shape = Profile)) +
+  geom_line(position = position_dodge(width = 0.05), size = 1) +
+  geom_point(position = position_dodge(width = 0.05), size = 2) +
+  geom_errorbar(aes(ymin = est - 1.68*se, ymax = est + 1.68*se), width = 0.1,
+                position = position_dodge(width = 0.05)) +
+  theme_bw() +
+  scale_color_manual(values = palette()) +
+  xlab("") +
+  ylab("Estimate +- 90% CI")
+
+ggsave("RQ3_MG_Profiles.jpg", width = 7, height = 4, dpi = 450)
+  
+```
+
+
+```{r RQ3.LPA.MG_STEP2}
+
+LPA_RQ3_MG_STEP2 <- '
+
+
+TITLE:
+CESAR03_RQ3_LPA_Multigroup_3profiles_STEP2;
+
+DATA:
+FILE IS
+"C:/local user data/CESAR0.3/Analysis_R/CESAR03.dat";
+
+VARIABLE:
+
+NAMES =
+ID
+Repko
+Konzept
+sample
+male
+leit_exp
+teacher
+MINT
+;
+
+USEVARIABLES ARE
+repko konzept
+;
+
+CLASSES = s(4) c(3);
+knownclass = s(sample = 1 sample = 2 sample = 3 sample = 4);
+
+MISSING = all(9999);
+
+ANALYSIS:
+
+TYPE = mixture;
+STARTS 1000 400;
+PROCESS = 4 1;
+
+MODEL:
+
+%OVERALL%
+
+C ON S;
+
+%s#1.c#1%
+
+[repko*] (s1m1);
+[konzept*] (s1m2);
+repko* (s1v1);
+konzept* (s1v2);
+
+%s#2.c#1%
+
+[repko*] (s1m1);
+[konzept*] (s1m2);
+repko* (s1v1);
+konzept* (s1v2);
+
+%s#3.c#1%
+
+[repko*] (s3m1);
+[konzept*] (s3m2);
+repko* (s3v1);
+konzept* (s3v2);
+
+%s#4.c#1%
+
+[repko*] (s4m1);
+[konzept*] (s4m2);
+repko* (s4v1);
+konzept* (s4v2);
+
+%s#1.c#2%
+
+[repko*] (s1m3);
+[konzept*] (s1m4);
+repko* (s1v3);
+konzept* (s1v4);
+
+%s#2.c#2%
+
+[repko*] (s2m3);
+[konzept*] (s2m4);
+repko* (s2v3);
+konzept* (s2v4);
+
+%s#3.c#2%
+
+[repko*] (s1m3);
+[konzept*] (s1m4);
+repko* (s1v3);
+konzept* (s1v4);
+
+%s#4.c#2%
+
+[repko*] (s4m3);
+[konzept*] (s4m4);
+repko* (s4v3);
+konzept* (s4v4);
+
+%s#1.c#3%
+
+[repko*] (s1m5);
+[konzept*] (s1m6);
+repko* (s1v5);
+konzept* (s1v6);
+
+%s#2.c#3%
+
+[repko*] (s2m5);
+[konzept*] (s2m6);
+repko* (s2v5);
+konzept* (s2v6);
+
+%s#3.c#3%
+
+[repko*] (s3m5);
+[konzept*] (s3m6);
+repko* (s3v5);
+konzept* (s3v6);
+
+%s#4.c#3%
+
+[repko*] (s6m5);
+[konzept*] (s6m6);
+repko* (s6v5);
+konzept* (s6v6);
+
+OUTPUT: sampstat residual tech1;
+
+plot:
+type is plot1 plot2 plot3;
+series is repko (1) konzept (2);
+
+'
+
+```
+
+### RQ3 LPA MG: Run analyses of created models MG
+
+```{r run.dataanalyses.MG}
+#dir.create("CESAR03_RQ3_LPA_Multigroup_STEP2")
+
+writeLines(LPA_RQ3_MG_STEP2, "CESAR03_RQ3_LPA_Multigroup_STEP2/LPA_RQ3_MG_STEP2.inp")
+
+#Run Mplus input files
+runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP2/", recursive = TRUE)
+
+```
+
+### RQ3 LPA MG: Inspect results
+
+```{r LPA.results.MG}
+
+RQ3_LPAs_MG_STEP2_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP2/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
+
+# CESAR03_RQ3_LPA_Multigroup_3profiles Estimated using MLR 
+# Number of obs: 515, number of (free) parameters: 59 
+# AIC = 5963.944, BIC = 6214.35
+
+RQ3_LPAs_MG_3output$summaries$Observations
+RQ3_LPAs_MG_3output$summaries$Parameters
+RQ3_LPAs_MG_3output$summaries$LL
+RQ3_LPAs_MG_3output$summaries$LLCorrectionFactor
+
+RQ3_LPAs_MG_STEP2_outputs$summaries$Observations
+RQ3_LPAs_MG_STEP2_outputs$summaries$Parameters
+RQ3_LPAs_MG_STEP2_outputs$summaries$LL
+RQ3_LPAs_MG_STEP2_outputs$summaries$LLCorrectionFactor
+
+
+
+# Difference Testing Using the Loglikelihood
+# 
+# Following are the steps needed to compute a chi-square difference test based on loglikelihood values and scaling correction factors obtained with the MLR estimator.
+# 
+# Estimate the nested and comparison models using MLR. The printout gives loglikelihood values L0 and L1 for the H0 and H1 models, respectively, as well as scaling correction factors c0 and c1 for the H0 and H1 models, respectively. For example,
+L1 = -2922.972
+c1 = 0.9399
+p1 = 59
+
+L0 = -2925.366
+c0 = 0.9022
+p0 = 51
+
+cd = (p0 * c0 - p1*c1)/(p0 - p1) #1.180237
+TRd = -2*(L0 - L1)/cd #4.056811
+pchisq(4.056811, df = 8, lower.tail = FALSE) #p = .852
+
+
+# Estimated using MLR 
+# Number of obs: 515, number of (free) parameters: 51
+# AIC = 5952.731, BIC = 6169.184 
+
+RQ3_LPAs_MG_STEP2_outputs$parameters$unstandardized %>%
+  filter(paramHeader == "Means") %>%
+  filter(param == "KONZEPT" | param == "REPKO") %>%
+  mutate(param = fct_relevel(param,
+                             c("REPKO", "KONZEPT"))) %>%
+  mutate(param = fct_recode(param,
+                            "Representational Competence" = "REPKO",
+                            "Conceptual Knowledge" = "KONZEPT")) %>%
+  mutate(Sample = substr(LatentClass, 1, 1),
+         Profile = substr(LatentClass, 3, 3)) %>%
+    mutate(Sample = fct_recode(factor(Sample),
+                             "Teacher Education SU" = "1",
+                             "Engineering TUK" = "2",
+                             "Environmental Science ETH" = "3",
+                             "Physics ETH" = "4")) %>%
+  ggplot(aes(x = param, y = est, group = LatentClass, color = Sample, shape = Profile)) +
+  geom_line(position = position_dodge(width = 0.05), size = 1) +
+  geom_point(position = position_dodge(width = 0.05), size = 2) +
+  geom_errorbar(aes(ymin = est - 1.68*se, ymax = est + 1.68*se), width = 0.1,
+                position = position_dodge(width = 0.05)) +
+  theme_bw() +
+  scale_color_manual(values = palette()) +
+  xlab("") +
+  ylab("Estimate +- 90% CI")
+
+ggsave("RQ3_MG_STEP2_Profiles.jpg", width = 7, height = 4, dpi = 450)
+  
+  
+```
+
+```{r RQ3.LPA.MG_STEP3}
+
+LPA_RQ3_MG_STEP3 <- '
+
+
+TITLE:
+CESAR03_RQ3_LPA_Multigroup_3profiles_STEP3;
+
+DATA:
+FILE IS
+"C:/local user data/CESAR0.3/Analysis_R/CESAR03.dat";
+
+VARIABLE:
+
+NAMES =
+ID
+Repko
+Konzept
+sample
+male
+leit_exp
+teacher
+MINT
+;
+
+USEVARIABLES ARE
+repko konzept
+;
+
+CLASSES = s(4) c(3);
+knownclass = s(sample = 1 sample = 2 sample = 3 sample = 4);
+
+MISSING = all(9999);
+
+ANALYSIS:
+
+TYPE = mixture;
+STARTS 1000 400;
+PROCESS = 4 1;
+
+MODEL:
+
+%OVERALL%
+
+C ON S;
+
+%s#1.c#1%
+
+[repko*] (m1);
+[konzept*] (m2);
+repko* (v1);
+konzept* (v2);
+
+%s#2.c#1%
+
+[repko*] (m1);
+[konzept*] (m2);
+repko* (v1);
+konzept* (v2);
+
+%s#1.c#2%
+
+[repko*] (m3);
+[konzept*] (m4);
+repko* (v3);
+konzept* (v4);
+
+%s#2.c#2%
+
+[repko*] (m3);
+[konzept*] (m4);
+repko* (v3);
+konzept* (v4);
+
+%s#1.c#3%
+
+[repko*] (m5);
+[konzept*] (m6);
+repko* (v5);
+konzept* (v6);
+
+%s#3.c#1%
+
+[repko*] (m5);
+[konzept*] (m6);
+repko* (v5);
+konzept* (v6);
+
+
+
+%s#2.c#3%
+
+[repko*] (m7);
+[konzept*] (m8);
+repko* (v7);
+konzept* (s2v8);
+
+%s#4.c#1%
+
+[repko*] (m7);
+[konzept*] (m8);
+repko* (v7);
+konzept* (s2v8);
+
+
+%s#3.c#2%
+
+[repko*] (m9);
+[konzept*] (m10);
+repko* (v9);
+konzept* (v10);
+
+%s#3.c#3%
+
+[repko*] (m11);
+[konzept*] (m12);
+repko* (v11);
+konzept* (v12);
+
+
+%s#4.c#2%
+
+[repko*] (m13);
+[konzept*] (m14);
+repko* (v13);
+konzept* (v14);
+
+%s#4.c#3%
+
+[repko*] (m15);
+[konzept*] (m16);
+repko* (v15);
+konzept* (v16);
+
+OUTPUT: sampstat residual tech1;
+
+plot:
+type is plot1 plot2 plot3;
+series is repko (1) konzept (2);
+
+'
+
+```
+
+### RQ3 LPA MG STEP3: Run analyses of created models MG
+
+```{r run.dataanalyses.MG}
+dir.create("CESAR03_RQ3_LPA_Multigroup_STEP3")
+
+writeLines(LPA_RQ3_MG_STEP3, "CESAR03_RQ3_LPA_Multigroup_STEP3/LPA_RQ3_MG_STEP3.inp")
+
+#Run Mplus input files
+runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP3/", recursive = TRUE)
+
+```
+
+### RQ3 LPA MG STEP3: Inspect results
+
+```{r LPA.results.MG.STEP3}
+
+RQ3_LPAs_MG_STEP3_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP3/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
+
+# Difference Testing Using the Loglikelihood
+# 
+# Following are the steps needed to compute a chi-square difference test based on loglikelihood values and scaling correction factors obtained with the MLR estimator.
+# 
+# Estimate the nested and comparison models using MLR. The printout gives loglikelihood values L0 and L1 for the H0 and H1 models, respectively, as well as scaling correction factors c0 and c1 for the H0 and H1 models, respectively. For example,
+
+# Estimated using MLR 
+# Number of obs: 515, number of (free) parameters: 51
+# AIC = 5952.731, BIC = 6169.184 
+
+RQ3_LPAs_MG_STEP3_outputs$class_counts$modelEstimated.patterns$proportion
+RQ3_LPAs_MG_STEP3_outputs$parameters$unstandardized %>%
+  filter(paramHeader == "Means") %>%
+  filter(param == "KONZEPT" | param == "REPKO") %>%
+  mutate(param = fct_relevel(param,
+                             c("REPKO", "KONZEPT"))) %>%
+  mutate(param = fct_recode(param,
+                            "Representational Competence" = "REPKO",
+                            "Conceptual Knowledge" = "KONZEPT")) %>%
+  mutate(Sample = substr(LatentClass, 1, 1),
+         Profile = substr(LatentClass, 3, 3)) %>%
+    mutate(Sample = fct_recode(factor(Sample),
+                             "Teacher Education SU" = "1",
+                             "Engineering TUK" = "2",
+                             "Environmental Science ETH" = "3",
+                             "Physics ETH" = "4")) %>%
+  #(21% / 10% / 7% / 10%)
+#    variable class    count proportion
+# 1        S     1 188.0000    0.36505
+# 2        S     2 149.0000    0.28932
+# 3        S     3  98.0000    0.19029
+# 4        S     4  80.0000    0.15534
+# 5        C     1 245.8263    0.47733
+# 6        C     2 123.0780    0.23899
+# 7        C     3 146.0957    0.28368
+#   > RQ3_LPAs_MG_STEP3_outputs$class_counts$modelEstimated.patterns$count
+#  [1] 109.78184  66.60080  11.61735
+#  [4]  49.49098  33.81425  65.69477
+#  [7]  37.46231   7.40207  53.13561
+# [10]  49.09115  15.26090  15.64794
+# data.frame(Sample = c(rep(1, 3),
+#                       rep(2, 3),
+#                       rep(3, 3),
+#                       rep(4, 3)),
+#            Profile = rep(1:3, 4),
+#            N = c(rep(188, 3),
+#                  rep(149, 3),
+#                  rep(98, 3),
+#                  rep(80, 3)),
+#            n_Profile = RQ3_LPAs_MG_STEP3_outputs$class_counts$modelEstimated.patterns$count) %>%
+#   mutate(Profile_prop = n_Profile/N)
+  mutate(Profile_label = fct_recode(LatentClass,
+                                    "RC low / CK very low\n(58% / 33% / 0% / 19%)" = "1.1",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)" = "1.2",
+                                    "RC very high / CK low\n(6% / 0% / 0% / 0%)" = "1.3",
+                                    "RC low / CK very low\n(58% / 33% / 0% / 19%)" = "2.1",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)" = "2.2",
+                                    "RC high / CK high\n(0% / 44% / 0% / 61%)" = "2.3",
+                                    "RC high / CK low\n(0% / 0% / 38% / 0%)" = "3.1",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)" = "3.2",
+                                    "RC high / CK very low\n(0% / 0% / 54% / 0%)" = "3.3",
+                                    "RC high / CK high\n(0% / 44% / 0% / 61%)" = "4.1",
+                                    "RC low / CK very low\n(58% / 33% / 0% / 19%)" = "4.2",
+                                    "RC very high / CK very high\n(0% / 0% / 0% / 20%)" = "4.3"
+                                    )) %>%
+  mutate(Profile_label = fct_relevel(Profile_label,
+                                     c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                       "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                       "RC high / CK very low\n(0% / 0% / 54% / 0%)",
+                                       "RC high / CK low\n(0% / 0% / 38% / 0%)",
+                                       "RC high / CK high\n(0% / 44% / 0% / 61%)",
+                                       "RC very high / CK low\n(6% / 0% / 0% / 0%)",
+                                       "RC very high / CK very high\n(0% / 0% / 0% / 20%)"))) %>%
+  mutate(Profile_label_RC  = ifelse(str_detect(Profile_label, "RC low"), "Low", ifelse(str_detect(Profile_label, "RC high"), "High", "Very high")),
+         Profile_label_CK  = ifelse(str_detect(Profile_label, "CK very low"), "Very low", ifelse(str_detect(Profile_label, "CK low"), "Low", ifelse(str_detect(Profile_label, "CK high"), "High", "Very high")))) %>%
+  ggplot(aes(x = param, y = est, group = interaction(Profile_label_RC, Profile_label_CK, Sample), linetype = Profile_label, shape = Profile_label)) +
+  geom_line(position = position_dodge(width = 0.1), size = 1) +
+  geom_point(position = position_dodge(width = 0.1), size = 2) +
+  geom_errorbar(aes(ymin = est - 1.68*se, ymax = est + 1.68*se), width = 0.1,
+                position = position_dodge(width = 0.1)) +
+  theme_bw() +
+  scale_color_manual(values = palette()) +
+  xlab("") +
+  ylab("Estimate +- 90% CI") +
+  scale_y_continuous(limits = c(0, 12),
+                     breaks = c(0:12),
+                     sec.axis = sec_axis( trans=~., name="",
+                     breaks = c(0:12))) +
+  geom_hline(aes(yintercept = 3), color = "grey", linetype = 2, size = 1.1) +
+  geom_hline(aes(yintercept = 6), color = "grey", linetype = 2, size = 1.1) +
+  geom_hline(aes(yintercept = 9), color = "grey", linetype = 2, size = 1.1) +
+  guides(linetype = guide_legend(title = "Profile\n(% in samples)"),
+         shape = guide_legend(title = "Profile\n(% in samples)"),
+         color = guide_legend(title = "Profile\n(% in samples)")) +
+  scale_linetype_manual(values = c(1, 1, 2, 2, 2, 3, 3)) +
+  scale_shape_manual(values = c(21, 22, 21, 22, 23, 22, 24)) +
+  theme(panel.grid.minor = element_blank()) +
+  theme(panel.grid.major = element_blank()) +
+  theme(legend.key.size = unit(1, "cm"))
+  
+
+ggsave("RQ3_MG_STEP3_Profiles_labels.jpg", width = 7, height = 4, dpi = 450)
+
+#Figure with profile labels
+
+
+```
+
+## RQ5 LPA MG DCAT
+
+```{r RQ5.LPA.DCAT}
+
+LPARQ5_DCAT <- '
+
+[[init]]
+iterators = s;
+s = 1:4;
+
+filename = "RQ5_LPA_[[c]]profiles_sample[[s]].inp";
+outputDirectory = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ5_LPA_DCAT/sample[[s]]/";
+
+[[/init]]
+
+TITLE:
+CESAR03_RQ5_LPA_3profiles_DCAT_sample[[s]]
+
+DATA:
+FILE IS
+"C:/local user data/CESAR0.3/Analysis_R/CESAR03.dat";
+
+VARIABLE:
+
+NAMES =
+ID
+Repko
+Konzept
+sample
+male
+leit_exp
+teacher
+MINT
+;
+
+USEVARIABLES ARE
+repko konzept
+;
+
+useobservations are sample == [[s]];
+
+[[s < 3]]
+
+AUXILIARY = ID
+male (DCAT)
+leit_exp (DCAT)
+teacher (DCAT)
+MINT (DCAT)
+;
+
+[[/s < 3]]
+
+[[s > 2]]
+!not teacher because no variation
+AUXILIARY = ID
+male (DCAT)
+leit_exp (DCAT)
+MINT (DCAT)
+;
+
+[[/s > 2]]
+
+CLASSES = c(3);
+
+MISSING = all(9999);
+
+ANALYSIS:
+
+TYPE = mixture;
+STARTS 1000 400;
+PROCESS = 4 1;
+
+MODEL:
+
+[[s == 1]]
+
+%c#1%
+[repko@4.118];
+[konzept@1.049];
+repko@3.167;
+konzept@0.634;
+
+%c#2%
+[repko@4.914];
+[konzept@3.336];
+repko@3.866;
+konzept@2.333;
+
+%c#3%
+[repko@9.667];
+[konzept@5.274];
+repko@2.055;
+konzept@5.723;
+
+[[/s == 1]]
+
+[[s == 2]]
+
+%c#1%
+[repko@4.118];
+[konzept@1.049];
+repko@3.167;
+konzept@0.634;
+
+%c#2%
+[repko@4.914];
+[konzept@3.336];
+repko@3.866;
+konzept@2.333;
+
+%c#3%
+[repko@8.617];
+[konzept@6.900];
+repko@3.640;
+konzept@8.035;
+
+[[/s == 2]]
+
+[[s == 3]]
+
+%c#1%
+[repko@9.667];
+[konzept@5.274];
+repko@2.055;
+konzept@5.723;
+
+%c#2%
+[repko@4.950];
+[konzept@4.444];
+repko@0.593;
+konzept@0.695;
+
+%c#3%
+[repko@7.108];
+[konzept@1.162];
+repko@5.203;
+konzept@0.905;
+
+[[/s == 3]]
+
+[[s == 4]]
+
+%c#1%
+[repko@8.617];
+[konzept@6.900];
+repko@3.640;
+konzept@8.035;
+
+%c#2%
+[repko@5.258];
+[konzept@2.325;
+repko@1.387;
+konzept@1.349;
+
+%c#3%
+[repko@11.407];
+[konzept@10.788];
+repko@0.303;
+konzept@1.422;
+
+[[/s == 4]]
+
+OUTPUT: sampstat residual tech1 tech11 tech14;
+
+plot:
+type is plot1 plot2 plot3;
+series is repko (1) konzept (2);
+
+'
+
+```
+
+###Run analyses of created models 
+
+```{r run.dataanalyses}
+
+#Write template into textfile
+write(LPARQ5_DCAT, file = "LPA_RQ5_DCAT.txt")
+
+#Write Mplus input files based on template for all 30 combinations of N, E, missingdata(attrition).
+createModels("LPA_RQ5_DCAT.txt")
+
+#Run Mplus input files
+runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ5_LPA_DCAT/", recursive = TRUE)
+
+```
+
+### Inspect results
+
+```{r LPA.results}
+
+RQ5_LPAs_DCAT_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ5_LPA_DCAT/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
+
+RQ5_lcCondMeans <-
+rbind(
+rbind(
+RQ5_LPAs_DCAT_outputs[[1]]$lcCondMeans$MALE$parameters %>% mutate(variable = "male"),
+RQ5_LPAs_DCAT_outputs[[1]]$lcCondMeans$MINT$parameters %>% mutate(variable = "MINT"),
+RQ5_LPAs_DCAT_outputs[[1]]$lcCondMeans$TEACHER$parameters %>% mutate(variable = "Teacher"),
+RQ5_LPAs_DCAT_outputs[[1]]$lcCondMeans$LEIT_EXP$parameters%>% mutate(variable = "Swing")) %>% mutate(Sample = "Teacher Education SU"),
+rbind(
+RQ5_LPAs_DCAT_outputs[[2]]$lcCondMeans$MALE$parameters %>% mutate(variable = "male"),
+RQ5_LPAs_DCAT_outputs[[2]]$lcCondMeans$MINT$parameters %>% mutate(variable = "MINT"),
+RQ5_LPAs_DCAT_outputs[[2]]$lcCondMeans$TEACHER$parameters %>% mutate(variable = "Teacher"),
+RQ5_LPAs_DCAT_outputs[[2]]$lcCondMeans$LEIT_EXP$parameters%>% mutate(variable = "Swing")) %>% mutate(Sample = "Engineering TUK"),
+rbind(
+RQ5_LPAs_DCAT_outputs[[3]]$lcCondMeans$MALE$parameters %>% mutate(variable = "male"),
+RQ5_LPAs_DCAT_outputs[[3]]$lcCondMeans$MINT$parameters %>% mutate(variable = "MINT"),
+RQ5_LPAs_DCAT_outputs[[3]]$lcCondMeans$LEIT_EXP$parameters%>% mutate(variable = "Swing")) %>% mutate(Sample = "Environmental Science ETH"),
+rbind(
+RQ5_LPAs_DCAT_outputs[[4]]$lcCondMeans$MALE$parameters %>% mutate(variable = "male"),
+RQ5_LPAs_DCAT_outputs[[4]]$lcCondMeans$MINT$parameters %>% mutate(variable = "MINT"),
+RQ5_LPAs_DCAT_outputs[[4]]$lcCondMeans$LEIT_EXP$parameters%>% mutate(variable = "Swing")) %>% mutate(Sample = "Physics ETH")
+) %>% mutate(across(
+    .cols = -any_of(c("variable", "Sample")),
+    .fns = ~ if (is.character(.)) as.numeric(.) else .
+  )) %>%
+  dplyr::rename("Profile" = "class")
+
+str(RQ5_lcCondMeans)
+
+#x-Axis: Profile; group: Sample; first:
+#name profiles according to above:
+  # mutate(Profile_label = fct_recode(LatentClass,
+  #                                   "RC low / CK very low\n(58% / 33% / 0% / 19%)" = "1.1",
+  #                                   "RC low / CK low\n(35% / 23% / 8% / 0%)" = "1.2",
+  #                                   "RC very high / CK low\n(6% / 0% / 0% / 0%)" = "1.3",
+  #                                   "RC low / CK very low\n(58% / 33% / 0% / 19%)" = "2.1",
+  #                                   "RC low / CK low\n(35% / 23% / 8% / 0%)" = "2.2",
+  #                                   "RC high / CK high\n(0% / 44% / 0% / 61%)" = "2.3",
+  #                                   "RC high / CK low\n(0% / 0% / 38% / 0%)" = "3.1",
+  #                                   "RC low / CK low\n(35% / 23% / 8% / 0%)" = "3.2",
+  #                                   "RC high / CK very low\n(0% / 0% / 54% / 0%)" = "3.3",
+  #                                   "RC high / CK high\n(0% / 44% / 0% / 61%)" = "4.1",
+  #                                   "RC low / CK very low\n(58% / 33% / 0% / 19%)" = "4.2",
+  #                                   "RC very high / CK very high\n(0% / 0% / 0% / 20%)" = "4.3"
+  #                                   )) %>%
+  # mutate(Profile_label = fct_relevel(Profile_label,
+  #                                    c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+  #                                      "RC low / CK low\n(35% / 23% / 8% / 0%)",
+  #                                      "RC high / CK very low\n(0% / 0% / 54% / 0%)",
+  #                                      "RC high / CK low\n(0% / 0% / 38% / 0%)",
+  #                                      "RC high / CK high\n(0% / 44% / 0% / 61%)",
+  #                                      "RC very high / CK low\n(6% / 0% / 0% / 0%)",
+  #                                      "RC very high / CK very high\n(0% / 0% / 0% / 20%)"))) %>%
+  # mutate(Profile_label_RC  = ifelse(str_detect(Profile_label, "RC low"), "Low", ifelse(str_detect(Profile_label, "RC high"), "High", "Very high")),
+  #        Profile_label_CK  = ifelse(str_detect(Profile_label, "CK very low"), "Very low", ifelse(str_detect(Profile_label, "CK low"), "Low", ifelse(str_detect(Profile_label, "CK high"), "High", "Very high")))) %>%
+
+
+RQ5_lcCondMeans %>%
+  filter(category == "2" & variable == "male") %>%
+  mutate(Profile_label = c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                    "RC very high / CK low\n(6% / 0% / 0% / 0%)",
+                                    "RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                    "RC high / CK high\n(0% / 44% / 0% / 61%)",
+                                    "RC high / CK low\n(0% / 0% / 38% / 0%)",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                    "RC high / CK very low\n(0% / 0% / 54% / 0%)",
+                                    "RC high / CK high\n(0% / 44% / 0% / 61%)",
+                                    "RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                    "RC very high / CK very high\n(0% / 0% / 0% / 20%)")) %>%
+    mutate(Profile_label = fct_relevel(Profile_label,
+                                     c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                       "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                       "RC high / CK very low\n(0% / 0% / 54% / 0%)",
+                                       "RC high / CK low\n(0% / 0% / 38% / 0%)",
+                                       "RC high / CK high\n(0% / 44% / 0% / 61%)",
+                                       "RC very high / CK low\n(6% / 0% / 0% / 0%)",
+                                       "RC very high / CK very high\n(0% / 0% / 0% / 20%)"))) %>%
+  mutate(Sample = fct_relevel(Sample,
+                              c("Teacher Education SU",
+                                "Engineering TUK",
+                                "Environmental Science ETH",
+                                "Physics ETH"))) %>%
+  ggplot(aes(x = factor(Profile_label), y = prob, group = Sample, shape = Sample, color = Sample)) +
+    geom_point(size = 2.5, position = position_dodge(width = 0.2)) +
+    geom_errorbar(aes(ymin = prob - 1.68*se, ymax = prob + 1.68*se),
+                  width = 0.1, size = 1, position = position_dodge(width = 0.2)) +
+    scale_y_continuous(name = "Estimated proportion\nof males (+- 90% CI)",
+                       limits = c(-0.15, 1.15),
+                       breaks = seq(0, 1, 0.2),
+                       labels = seq(0, 1, 0.2),
+                       sec.axis = sec_axis(~ ., 
+                                           name = "",
+                                           breaks = seq(0, 1, 0.2),
+                                           labels = seq(0, 1, 0.2)
+                                           )
+                       ) +
+    geom_hline(yintercept = 3, color = "grey", linetype = 2) +
+    theme(panel.background = element_blank(),
+          panel.border = element_rect(color = "black", fill = "NA"),
+          axis.line = element_line(),
+          axis.text = element_text(color = "black"),
+          legend.position = "top",
+          plot.title = element_text(hjust = 0.5, size = 12), # Centered and bold with a smaller font size
+          plot.title.position = "plot", # Position the title over the plot area
+          ) +
+    scale_color_manual(values = palette(), name = "Sample") +
+    labs(title = "", x = "Profile", y = "") +
+    theme(plot.margin = margin(0, 0, 0, 0))
+
+ggsave("RQ5_male.jpg", dpi = 450, width = 11, height = 4)
+
+
+
+RQ5_lcCondMeans %>%
+  filter(category == "2" & variable == "MINT") %>%
+  mutate(Profile_label = c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                    "RC very high / CK low\n(6% / 0% / 0% / 0%)",
+                                    "RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                    "RC high / CK high\n(0% / 44% / 0% / 61%)",
+                                    "RC high / CK low\n(0% / 0% / 38% / 0%)",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                    "RC high / CK very low\n(0% / 0% / 54% / 0%)",
+                                    "RC high / CK high\n(0% / 44% / 0% / 61%)",
+                                    "RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                    "RC very high / CK very high\n(0% / 0% / 0% / 20%)")) %>%
+    mutate(Profile_label = fct_relevel(Profile_label,
+                                     c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                       "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                       "RC high / CK very low\n(0% / 0% / 54% / 0%)",
+                                       "RC high / CK low\n(0% / 0% / 38% / 0%)",
+                                       "RC high / CK high\n(0% / 44% / 0% / 61%)",
+                                       "RC very high / CK low\n(6% / 0% / 0% / 0%)",
+                                       "RC very high / CK very high\n(0% / 0% / 0% / 20%)"))) %>%
+  mutate(Sample = fct_relevel(Sample,
+                              c("Teacher Education SU",
+                                "Engineering TUK",
+                                "Environmental Science ETH",
+                                "Physics ETH"))) %>%
+  ggplot(aes(x = factor(Profile_label), y = prob, group = Sample, shape = Sample, color = Sample)) +
+    geom_point(size = 2.5, position = position_dodge(width = 0.2)) +
+    geom_errorbar(aes(ymin = prob - 1.68*se, ymax = prob + 1.68*se),
+                  width = 0.1, size = 1, position = position_dodge(width = 0.2)) +
+    scale_y_continuous(name = "Estimated proportion\n of STEM students (+- 90% CI)",
+                       limits = c(-0.15, 1.15),
+                       breaks = seq(0, 1, 0.2),
+                       labels = seq(0, 1, 0.2),
+                       sec.axis = sec_axis(~ ., 
+                                           name = "",
+                                           breaks = seq(0, 1, 0.2),
+                                           labels = seq(0, 1, 0.2)
+                                           )
+                       ) +
+    geom_hline(yintercept = 3, color = "grey", linetype = 2) +
+    theme(panel.background = element_blank(),
+          panel.border = element_rect(color = "black", fill = "NA"),
+          axis.line = element_line(),
+          axis.text = element_text(color = "black"),
+          legend.position = "top",
+          plot.title = element_text(hjust = 0.5, size = 12), # Centered and bold with a smaller font size
+          plot.title.position = "plot", # Position the title over the plot area
+          ) +
+    scale_color_manual(values = palette(), name = "Sample") +
+    labs(title = "", x = "Profile", y = "") +
+    theme(plot.margin = margin(0, 0, 0, 0))
+
+ggsave("RQ5_STEM.jpg", dpi = 450, width = 11, height = 4)
+
+RQ5_lcCondMeans %>%
+  filter(category == "2" & variable == "Teacher" & Sample == "Teacher Education SU") %>%
+  mutate(Profile_label = c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                    "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                    "RC very high / CK low\n(6% / 0% / 0% / 0%)")) %>%
+    mutate(Profile_label = fct_relevel(Profile_label,
+                                     c("RC low / CK very low\n(58% / 33% / 0% / 19%)",
+                                       "RC low / CK low\n(35% / 23% / 8% / 0%)",
+                                       "RC very high / CK low\n(6% / 0% / 0% / 0%)"))) %>%
+  mutate(Sample = fct_relevel(Sample,
+                              c("Teacher Education SU",
+                                "Engineering TUK",
+                                "Environmental Science ETH",
+                                "Physics ETH"))) %>%
+  ggplot(aes(x = factor(Profile_label), y = prob, group = Sample, shape = Sample, color = Sample)) +
+    geom_point(size = 2.5, position = position_dodge(width = 0.2)) +
+    geom_errorbar(aes(ymin = prob - 1.68*se, ymax = prob + 1.68*se),
+                  width = 0.1, size = 1, position = position_dodge(width = 0.2)) +
+    scale_y_continuous(name = "Estimated proportion\nof teacher students (+- 90% CI)",
+                       limits = c(-0.15, 1.15),
+                       breaks = seq(0, 1, 0.2),
+                       labels = seq(0, 1, 0.2),
+                       sec.axis = sec_axis(~ ., 
+                                           name = "",
+                                           breaks = seq(0, 1, 0.2),
+                                           labels = seq(0, 1, 0.2)
+                                           )
+                       ) +
+    geom_hline(yintercept = 3, color = "grey", linetype = 2) +
+    theme(panel.background = element_blank(),
+          panel.border = element_rect(color = "black", fill = "NA"),
+          axis.line = element_line(),
+          axis.text = element_text(color = "black"),
+          legend.position = "top",
+          plot.title = element_text(hjust = 0.5, size = 12), # Centered and bold with a smaller font size
+          plot.title.position = "plot", # Position the title over the plot area
+          ) +
+    scale_color_manual(values = palette(), name = "Sample") +
+    labs(title = "", x = "Profile", y = "") +
+    theme(plot.margin = margin(0, 0, 0, 0))
+
+ggsave("RQ5_Teacher.jpg", dpi = 450, width = 11, height = 4)
+
+
+RQ5_lcCondMeans %>%
+  filter(variable == "Swing") %>%
+  mutate(Profile_label = c(rep("\nRC low / CK very low", 4),
+                                    rep("RC low / CK low", 4),
+                                    rep("RC very high / CK low", 4),
+                                    rep("\nRC low / CK very low", 4),
+                                    rep("RC low / CK low", 4),
+                                    rep("\nRC high / CK high", 4),
+                                    rep("RC high / CK low", 4),
+                                    rep("RC low / CK low", 4),
+                                    rep("\nRC high / CK very low", 4),
+                                    rep("\nRC high / CK high", 4),
+                                    rep("\nRC low / CK very low", 4),
+                                    rep("\nRC very high / CK very high", 4))) %>%
+    mutate(Profile_label = fct_relevel(Profile_label,
+                                     c("\nRC low / CK very low",
+                                       "RC low / CK low",
+                                       "\nRC high / CK very low",
+                                       "RC high / CK low",
+                                       "\nRC high / CK high",
+                                       "RC very high / CK low",
+                                       "\nRC very high / CK very high"))) %>%
+  mutate(Sample = fct_relevel(Sample,
+                              c("Teacher Education SU",
+                                "Engineering TUK",
+                                "Environmental Science ETH",
+                                "Physics ETH"))) %>%
+  ggplot(aes(x = category, y = prob, group = Sample, shape = Sample, color = Sample)) +
+    geom_point(size = 2.5, position = position_dodge(width = 0.2)) +
+    geom_errorbar(aes(ymin = prob - 1.68*se, ymax = prob + 1.68*se),
+                  width = 0.1, size = 1, position = position_dodge(width = 0.2)) +
+    scale_y_continuous(name = "Estimated proportion (+- 90% CI)",
+                       limits = c(-0.15, 1.15),
+                       breaks = seq(0, 1, 0.2),
+                       labels = seq(0, 1, 0.2),
+                       sec.axis = sec_axis(~ ., 
+                                           name = "",
+                                           breaks = seq(0, 1, 0.2),
+                                           labels = seq(0, 1, 0.2)
+                                           )
+                       ) +
+    geom_hline(yintercept = 3, color = "grey", linetype = 2) +
+    theme(panel.background = element_blank(),
+          panel.border = element_rect(color = "black", fill = "NA"),
+          axis.line = element_line(),
+          axis.text = element_text(color = "black"),
+          legend.position = "top",
+          plot.title = element_text(hjust = 0.5, size = 12), # Centered and bold with a smaller font size
+          plot.title.position = "plot", # Position the title over the plot area
+          ) +
+    scale_color_manual(values = palette(), name = "Sample") +
+    labs(title = "", x = "Category", y = "") +
+    theme(plot.margin = margin(0, 0, 0, 0)) +
+  facet_wrap(Profile_label ~ Sample) +
+  scale_x_continuous(labels = c("not\nconducted",
+                              "teacher\nexperiment",
+                              "student\nexperiment",
+                              "can't\nremember")) +
+  xlab("")
+
+ggsave("RQ5_Learning.jpg", dpi = 450, width = 12, height = 8)
+
+
+
+```
+
+
+```

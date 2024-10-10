@@ -1,0 +1,1442 @@
+Mplus VERSION 8.5
+MUTHEN & MUTHEN
+02/28/2024  12:20 PM
+
+INPUT INSTRUCTIONS
+
+  data: file is CESAR03.dat;
+  variable: names are ID repko konzept sample male leiter;
+  missing = all(9999);
+
+  grouping = sample(1 = Saar 2 = Kaiser 3 = ETHEnvi 4 = ETHPhys);
+
+  usevariables = repko konzept;
+
+  model:
+
+  repko_l BY repko;
+  repko@0;
+  repko_l@1;
+
+  konz_l BY konzept;
+  konzept@0;
+  konz_l@1;
+
+  repko_l WITH konz_l (a);
+
+  MODEL Saar:
+
+  repko_l BY repko;
+  repko@0;
+  repko_l@1;
+
+  konz_l BY konzept;
+  konzept@0;
+  konz_l@1;
+
+  repko_l WITH konz_l (a);
+
+  MODEL Kaiser:
+
+  repko_l BY repko;
+  repko@0;
+  repko_l@1;
+
+  konz_l BY konzept;
+  konzept@0;
+  konz_l@1;
+
+  repko_l WITH konz_l (a);
+
+  MODEL ETHEnvi:
+
+  repko_l BY repko;
+  repko@0;
+  repko_l@1;
+
+  konz_l BY konzept;
+  konzept@0;
+  konz_l@1;
+
+  repko_l WITH konz_l (a);
+
+  MODEL ETHPhys:
+
+  repko_l BY repko;
+  repko@0;
+  repko_l@1;
+
+  konz_l BY konzept;
+  konzept@0;
+  konz_l@1;
+
+  repko_l WITH konz_l (a);
+
+
+
+  output: tech1 residual stdyx cinterval;
+
+
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 4
+Number of observations
+   Group SAAR                                                  532
+   Group KAISER                                                504
+   Group ETHENVI                                               276
+   Group ETHPHYS                                                83
+   Total sample size                                          1395
+
+Number of dependent variables                                    2
+Number of independent variables                                  0
+Number of continuous latent variables                            2
+
+Observed dependent variables
+
+  Continuous
+   REPKO       KONZEPT
+
+Continuous latent variables
+   REPKO_L     KONZ_L
+
+Variables with special functions
+
+  Grouping variable     SAMPLE
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Maximum number of iterations                                  1000
+Convergence criterion                                    0.500D-04
+Maximum number of steepest descent iterations                   20
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+
+Input data file(s)
+  CESAR03.dat
+
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+   Group SAAR
+     Number of missing data patterns             1
+
+   Group KAISER
+     Number of missing data patterns             1
+
+   Group ETHENVI
+     Number of missing data patterns             1
+
+   Group ETHPHYS
+     Number of missing data patterns             1
+
+
+COVARIANCE COVERAGE OF DATA
+
+Minimum covariance coverage value   0.100
+
+
+     PROPORTION OF DATA PRESENT FOR SAAR
+
+
+           Covariance Coverage
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        1.000         1.000
+
+
+     PROPORTION OF DATA PRESENT FOR KAISER
+
+
+           Covariance Coverage
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        1.000         1.000
+
+
+     PROPORTION OF DATA PRESENT FOR ETHENVI
+
+
+           Covariance Coverage
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        1.000         1.000
+
+
+     PROPORTION OF DATA PRESENT FOR ETHPHYS
+
+
+           Covariance Coverage
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        1.000         1.000
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS FOR SAAR
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     REPKO                 4.613       0.807       0.000    0.56%       3.000      4.000      4.000
+             532.000       4.989       0.585      12.000    0.75%       5.000      6.000
+     KONZEPT               2.086       1.237       0.000   15.79%       1.000      1.000      2.000
+             532.000       3.169       1.755      11.000    0.19%       2.000      3.000
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS FOR KAISER
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     REPKO                 6.329       0.017       1.000    1.79%       4.000      6.000      7.000
+             504.000       7.022      -0.785      12.000    1.39%       7.000      9.000
+     KONZEPT               4.254       0.686       0.000   11.11%       1.000      2.000      4.000
+             504.000      12.186      -0.604      12.000    3.97%       5.000      7.000
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS FOR ETHENVI
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     REPKO                 7.902      -0.237       2.000    1.45%       6.000      7.000      8.000
+             276.000       5.784      -0.644      12.000    5.80%       9.000     10.000
+     KONZEPT               2.859       1.025       0.000   17.39%       1.000      1.000      2.000
+             276.000       6.984       0.239      10.000    2.54%       3.000      5.000
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS FOR ETHPHYS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     REPKO                 8.771      -0.418       3.000    1.20%       6.000      8.000      9.000
+              83.000       6.610      -1.012      12.000   16.87%      10.000     11.000
+     KONZEPT               6.699      -0.111       0.000    1.20%       3.000      6.000      7.000
+              83.000      11.271      -1.120      12.000    8.43%       8.000     10.000
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       17
+
+Loglikelihood
+
+          H0 Value                       -6341.895
+          H1 Value                       -6329.750
+
+Information Criteria
+
+          Akaike (AIC)                   12717.790
+          Bayesian (BIC)                 12806.881
+          Sample-Size Adjusted BIC       12752.879
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit
+
+          Value                             24.291
+          Degrees of Freedom                     3
+          P-Value                           0.0000
+
+Chi-Square Contribution From Each Group
+
+          SAAR                               6.403
+          KAISER                            13.047
+          ETHENVI                            3.728
+          ETHPHYS                            1.112
+
+RMSEA (Root Mean Square Error Of Approximation)
+
+          Estimate                           0.143
+          90 Percent C.I.                    0.094  0.198
+          Probability RMSEA <= .05           0.001
+
+CFI/TLI
+
+          CFI                                0.938
+          TLI                                0.917
+
+Chi-Square Test of Model Fit for the Baseline Model
+
+          Value                            348.003
+          Degrees of Freedom                     4
+          P-Value                           0.0000
+
+SRMR (Standardized Root Mean Square Residual)
+
+          Value                              0.070
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Group SAAR
+
+ REPKO_L  BY
+    REPKO              2.292      0.069     32.978      0.000
+
+ KONZ_L   BY
+    KONZEPT            1.827      0.055     32.978      0.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            0.000      0.000    999.000    999.000
+    KONZ_L             0.000      0.000    999.000    999.000
+
+ Intercepts
+    REPKO              4.613      0.099     46.425      0.000
+    KONZEPT            2.087      0.079     26.348      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000      0.000    999.000    999.000
+    KONZEPT            0.000      0.000    999.000    999.000
+
+Group KAISER
+
+ REPKO_L  BY
+    REPKO              2.558      0.076     33.759      0.000
+
+ KONZ_L   BY
+    KONZEPT            3.370      0.100     33.759      0.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            0.671      0.062     10.761      0.000
+    KONZ_L             0.643      0.054     11.946      0.000
+
+ Intercepts
+    REPKO              4.613      0.099     46.425      0.000
+    KONZEPT            2.087      0.079     26.348      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000      0.000    999.000    999.000
+    KONZEPT            0.000      0.000    999.000    999.000
+
+Group ETHENVI
+
+ REPKO_L  BY
+    REPKO              2.471      0.103     24.101      0.000
+
+ KONZ_L   BY
+    KONZEPT            2.716      0.113     24.101      0.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            1.331      0.091     14.618      0.000
+    KONZ_L             0.284      0.068      4.186      0.000
+
+ Intercepts
+    REPKO              4.613      0.099     46.425      0.000
+    KONZEPT            2.087      0.079     26.348      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000      0.000    999.000    999.000
+    KONZEPT            0.000      0.000    999.000    999.000
+
+Group ETHPHYS
+
+ REPKO_L  BY
+    REPKO              2.506      0.182     13.746      0.000
+
+ KONZ_L   BY
+    KONZEPT            3.272      0.238     13.740      0.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            1.660      0.168      9.884      0.000
+    KONZ_L             1.410      0.152      9.264      0.000
+
+ Intercepts
+    REPKO              4.613      0.099     46.425      0.000
+    KONZEPT            2.087      0.079     26.348      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000      0.000    999.000    999.000
+    KONZEPT            0.000      0.000    999.000    999.000
+
+
+STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Group SAAR
+
+ REPKO_L  BY
+    REPKO              1.000      0.000    999.000    999.000
+
+ KONZ_L   BY
+    KONZEPT            1.000      0.000    999.000    999.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            0.000      0.000    999.000    999.000
+    KONZ_L             0.000      0.000    999.000    999.000
+
+ Intercepts
+    REPKO              2.013      0.075     26.886      0.000
+    KONZEPT            1.142      0.055     20.585      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000    999.000    999.000    999.000
+    KONZEPT            0.000    999.000    999.000    999.000
+
+Group KAISER
+
+ REPKO_L  BY
+    REPKO              1.000      0.000    999.000    999.000
+
+ KONZ_L   BY
+    KONZEPT            1.000      0.000    999.000    999.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            0.671      0.062     10.761      0.000
+    KONZ_L             0.643      0.054     11.946      0.000
+
+ Intercepts
+    REPKO              1.803      0.066     27.304      0.000
+    KONZEPT            0.619      0.030     20.771      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000    999.000    999.000    999.000
+    KONZEPT            0.000    999.000    999.000    999.000
+
+Group ETHENVI
+
+ REPKO_L  BY
+    REPKO              1.000      0.000    999.000    999.000
+
+ KONZ_L   BY
+    KONZEPT            1.000      0.000    999.000    999.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            1.331      0.091     14.618      0.000
+    KONZ_L             0.284      0.068      4.186      0.000
+
+ Intercepts
+    REPKO              1.866      0.087     21.391      0.000
+    KONZEPT            0.768      0.043     17.783      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000    999.000    999.000    999.000
+    KONZEPT            0.000    999.000    999.000    999.000
+
+Group ETHPHYS
+
+ REPKO_L  BY
+    REPKO              1.000      0.000    999.000    999.000
+
+ KONZ_L   BY
+    KONZEPT            1.000      0.000    999.000    999.000
+
+ REPKO_L  WITH
+    KONZ_L             0.458      0.021     21.473      0.000
+
+ Means
+    REPKO_L            1.660      0.168      9.884      0.000
+    KONZ_L             1.410      0.152      9.264      0.000
+
+ Intercepts
+    REPKO              1.841      0.140     13.181      0.000
+    KONZEPT            0.638      0.052     12.183      0.000
+
+ Variances
+    REPKO_L            1.000      0.000    999.000    999.000
+    KONZ_L             1.000      0.000    999.000    999.000
+
+ Residual Variances
+    REPKO              0.000    999.000    999.000    999.000
+    KONZEPT            0.000    999.000    999.000    999.000
+
+
+R-SQUARE
+
+Group SAAR
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    REPKO              1.000    999.000    999.000    999.000
+    KONZEPT            1.000    999.000    999.000    999.000
+
+Group KAISER
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    REPKO              1.000    999.000    999.000    999.000
+    KONZEPT            1.000    999.000    999.000    999.000
+
+Group ETHENVI
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    REPKO              1.000    999.000    999.000    999.000
+    KONZEPT            1.000    999.000    999.000    999.000
+
+Group ETHPHYS
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    REPKO              1.000    999.000    999.000    999.000
+    KONZEPT            1.000    999.000    999.000    999.000
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.745E-02
+       (ratio of smallest to largest eigenvalue)
+
+
+CONFIDENCE INTERVALS OF MODEL RESULTS
+
+                  Lower .5%  Lower 2.5%    Lower 5%    Estimate    Upper 5%  Upper 2.5%   Upper .5%
+
+Group SAAR
+
+ REPKO_L  BY
+    REPKO            2.113       2.156       2.177       2.292       2.406       2.428       2.471
+
+ KONZ_L   BY
+    KONZEPT          1.684       1.718       1.735       1.827       1.918       1.935       1.969
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          0.000       0.000       0.000       0.000       0.000       0.000       0.000
+    KONZ_L           0.000       0.000       0.000       0.000       0.000       0.000       0.000
+
+ Intercepts
+    REPKO            4.357       4.418       4.449       4.613       4.776       4.808       4.869
+    KONZEPT          1.883       1.931       1.956       2.087       2.217       2.242       2.291
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO            0.000       0.000       0.000       0.000       0.000       0.000       0.000
+    KONZEPT          0.000       0.000       0.000       0.000       0.000       0.000       0.000
+
+Group KAISER
+
+ REPKO_L  BY
+    REPKO            2.363       2.409       2.433       2.558       2.683       2.707       2.753
+
+ KONZ_L   BY
+    KONZEPT          3.112       3.174       3.205       3.370       3.534       3.565       3.627
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          0.510       0.549       0.568       0.671       0.774       0.793       0.832
+    KONZ_L           0.505       0.538       0.555       0.643       0.732       0.749       0.782
+
+ Intercepts
+    REPKO            4.357       4.418       4.449       4.613       4.776       4.808       4.869
+    KONZEPT          1.883       1.931       1.956       2.087       2.217       2.242       2.291
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO            0.000       0.000       0.000       0.000       0.000       0.000       0.000
+    KONZEPT          0.000       0.000       0.000       0.000       0.000       0.000       0.000
+
+Group ETHENVI
+
+ REPKO_L  BY
+    REPKO            2.207       2.270       2.303       2.471       2.640       2.672       2.736
+
+ KONZ_L   BY
+    KONZEPT          2.425       2.495       2.530       2.716       2.901       2.937       3.006
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          1.096       1.152       1.181       1.331       1.481       1.509       1.565
+    KONZ_L           0.109       0.151       0.173       0.284       0.396       0.417       0.459
+
+ Intercepts
+    REPKO            4.357       4.418       4.449       4.613       4.776       4.808       4.869
+    KONZEPT          1.883       1.931       1.956       2.087       2.217       2.242       2.291
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO            0.000       0.000       0.000       0.000       0.000       0.000       0.000
+    KONZEPT          0.000       0.000       0.000       0.000       0.000       0.000       0.000
+
+Group ETHPHYS
+
+ REPKO_L  BY
+    REPKO            2.036       2.148       2.206       2.506       2.805       2.863       2.975
+
+ KONZ_L   BY
+    KONZEPT          2.659       2.805       2.880       3.272       3.664       3.739       3.885
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          1.227       1.331       1.383       1.660       1.936       1.989       2.092
+    KONZ_L           1.018       1.112       1.159       1.410       1.660       1.708       1.802
+
+ Intercepts
+    REPKO            4.357       4.418       4.449       4.613       4.776       4.808       4.869
+    KONZEPT          1.883       1.931       1.956       2.087       2.217       2.242       2.291
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO            0.000       0.000       0.000       0.000       0.000       0.000       0.000
+    KONZEPT          0.000       0.000       0.000       0.000       0.000       0.000       0.000
+
+
+CONFIDENCE INTERVALS OF STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                  Lower .5%  Lower 2.5%    Lower 5%    Estimate    Upper 5%  Upper 2.5%   Upper .5%
+
+Group SAAR
+
+ REPKO_L  BY
+    REPKO            1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ KONZ_L   BY
+    KONZEPT          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          0.000       0.000       0.000       0.000       0.000       0.000       0.000
+    KONZ_L           0.000       0.000       0.000       0.000       0.000       0.000       0.000
+
+ Intercepts
+    REPKO            1.820       1.866       1.890       2.013       2.136       2.160       2.206
+    KONZEPT          0.999       1.034       1.051       1.142       1.234       1.251       1.285
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO          999.000     999.000     999.000       0.000     999.000     999.000     999.000
+    KONZEPT        999.000     999.000     999.000       0.000     999.000     999.000     999.000
+
+Group KAISER
+
+ REPKO_L  BY
+    REPKO            1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ KONZ_L   BY
+    KONZEPT          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          0.510       0.549       0.568       0.671       0.774       0.793       0.832
+    KONZ_L           0.505       0.538       0.555       0.643       0.732       0.749       0.782
+
+ Intercepts
+    REPKO            1.633       1.674       1.695       1.803       1.912       1.933       1.973
+    KONZEPT          0.542       0.561       0.570       0.619       0.668       0.678       0.696
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO          999.000     999.000     999.000       0.000     999.000     999.000     999.000
+    KONZEPT        999.000     999.000     999.000       0.000     999.000     999.000     999.000
+
+Group ETHENVI
+
+ REPKO_L  BY
+    REPKO            1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ KONZ_L   BY
+    KONZEPT          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          1.096       1.152       1.181       1.331       1.481       1.509       1.565
+    KONZ_L           0.109       0.151       0.173       0.284       0.396       0.417       0.459
+
+ Intercepts
+    REPKO            1.642       1.695       1.723       1.866       2.010       2.038       2.091
+    KONZEPT          0.657       0.684       0.697       0.768       0.839       0.853       0.880
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO          999.000     999.000     999.000       0.000     999.000     999.000     999.000
+    KONZEPT        999.000     999.000     999.000       0.000     999.000     999.000     999.000
+
+Group ETHPHYS
+
+ REPKO_L  BY
+    REPKO            1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ KONZ_L   BY
+    KONZEPT          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ REPKO_L  WITH
+    KONZ_L           0.403       0.416       0.423       0.458       0.493       0.500       0.513
+
+ Means
+    REPKO_L          1.227       1.331       1.383       1.660       1.936       1.989       2.092
+    KONZ_L           1.018       1.112       1.159       1.410       1.660       1.708       1.802
+
+ Intercepts
+    REPKO            1.481       1.567       1.611       1.841       2.071       2.115       2.201
+    KONZEPT          0.503       0.535       0.552       0.638       0.724       0.740       0.772
+
+ Variances
+    REPKO_L          1.000       1.000       1.000       1.000       1.000       1.000       1.000
+    KONZ_L           1.000       1.000       1.000       1.000       1.000       1.000       1.000
+
+ Residual Variances
+    REPKO          999.000     999.000     999.000       0.000     999.000     999.000     999.000
+    KONZEPT        999.000     999.000     999.000       0.000     999.000     999.000     999.000
+
+
+RESIDUAL OUTPUT
+
+
+     ESTIMATED MODEL AND RESIDUALS (OBSERVED - ESTIMATED) FOR SAAR
+
+
+           Model Estimated Means
+              REPKO         KONZEPT
+              ________      ________
+                4.613         2.087
+
+
+           Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.000         0.000
+
+
+           Standardized Residuals (z-scores) for Means
+              REPKO         KONZEPT
+              ________      ________
+              999.000       999.000
+
+
+           Normalized Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+               -0.001        -0.001
+
+
+           Model Estimated Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          5.252
+ KONZEPT        1.918         3.336
+
+
+           Model Estimated Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        0.458         1.000
+
+
+           Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO         -0.263
+ KONZEPT       -0.458        -0.167
+
+
+           Residuals for Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT       -0.091         0.000
+
+
+           Standardized Residuals (z-scores) for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO        999.000
+ KONZEPT       -4.060       999.000
+
+
+           Normalized Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO         -0.860
+ KONZEPT       -2.493        -0.860
+
+
+     ESTIMATED MODEL AND RESIDUALS (OBSERVED - ESTIMATED) FOR KAISER
+
+
+           Model Estimated Means
+              REPKO         KONZEPT
+              ________      ________
+                6.329         4.254
+
+
+           Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.000         0.000
+
+
+           Standardized Residuals (z-scores) for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.000         0.000
+
+
+           Normalized Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.000         0.000
+
+
+           Model Estimated Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          6.543
+ KONZEPT        3.949        11.354
+
+
+           Model Estimated Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        0.458         1.000
+
+
+           Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.479
+ KONZEPT        1.378         0.831
+
+
+           Residuals for Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT        0.118         0.000
+
+
+           Standardized Residuals (z-scores) for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          2.248
+ KONZEPT        3.574         2.248
+
+
+           Normalized Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.083
+ KONZEPT        2.898         1.083
+
+
+     ESTIMATED MODEL AND RESIDUALS (OBSERVED - ESTIMATED) FOR ETHENVI
+
+
+           Model Estimated Means
+              REPKO         KONZEPT
+              ________      ________
+                7.902         2.859
+
+
+           Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.000         0.000
+
+
+           Standardized Residuals (z-scores) for Means
+              REPKO         KONZEPT
+              ________      ________
+              999.000       999.000
+
+
+           Normalized Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.001         0.001
+
+
+           Model Estimated Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          6.108
+ KONZEPT        3.075         7.375
+
+
+           Model Estimated Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        0.458         1.000
+
+
+           Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO         -0.324
+ KONZEPT       -0.777        -0.391
+
+
+           Residuals for Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT       -0.097         0.000
+
+
+           Standardized Residuals (z-scores) for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO        999.000
+ KONZEPT       -2.525       999.000
+
+
+           Normalized Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO         -0.658
+ KONZEPT       -1.911        -0.658
+
+
+     ESTIMATED MODEL AND RESIDUALS (OBSERVED - ESTIMATED) FOR ETHPHYS
+
+
+           Model Estimated Means
+              REPKO         KONZEPT
+              ________      ________
+                8.771         6.700
+
+
+           Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.000        -0.001
+
+
+           Standardized Residuals (z-scores) for Means
+              REPKO         KONZEPT
+              ________      ________
+               -0.001        -0.009
+
+
+           Normalized Residuals for Means
+              REPKO         KONZEPT
+              ________      ________
+                0.000        -0.002
+
+
+           Model Estimated Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          6.278
+ KONZEPT        3.756        10.707
+
+
+           Model Estimated Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          1.000
+ KONZEPT        0.458         1.000
+
+
+           Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.333
+ KONZEPT        0.946         0.564
+
+
+           Residuals for Correlations
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT        0.087         0.000
+
+
+           Standardized Residuals (z-scores) for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.711
+ KONZEPT        0.970         0.710
+
+
+           Normalized Residuals for Covariances
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.324
+ KONZEPT        0.877         0.322
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR SAAR
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                  1             2
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO              3             0
+ KONZEPT            0             4
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO              0
+ KONZEPT            0             0
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                  0             0
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0             0
+ KONZ_L             0             0
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0
+ KONZ_L             5             0
+
+
+     PARAMETER SPECIFICATION FOR KAISER
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                  1             2
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO              6             0
+ KONZEPT            0             7
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO              0
+ KONZEPT            0             0
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                  8             9
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0             0
+ KONZ_L             0             0
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0
+ KONZ_L             5             0
+
+
+     PARAMETER SPECIFICATION FOR ETHENVI
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                  1             2
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO             10             0
+ KONZEPT            0            11
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO              0
+ KONZEPT            0             0
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                 12            13
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0             0
+ KONZ_L             0             0
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0
+ KONZ_L             5             0
+
+
+     PARAMETER SPECIFICATION FOR ETHPHYS
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                  1             2
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO             14             0
+ KONZEPT            0            15
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO              0
+ KONZEPT            0             0
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                 16            17
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0             0
+ KONZ_L             0             0
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L            0
+ KONZ_L             5             0
+
+
+     STARTING VALUES FOR SAAR
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                4.613         2.086
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO          1.000         0.000
+ KONZEPT        0.000         1.000
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT        0.000         0.000
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        0.000         0.000
+ KONZ_L         0.000         0.000
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        1.000
+ KONZ_L         0.000         1.000
+
+
+     STARTING VALUES FOR KAISER
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                4.613         2.086
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO          1.000         0.000
+ KONZEPT        0.000         1.000
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT        0.000         0.000
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        0.000         0.000
+ KONZ_L         0.000         0.000
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        1.000
+ KONZ_L         0.000         1.000
+
+
+     STARTING VALUES FOR ETHENVI
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                4.613         2.086
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO          1.000         0.000
+ KONZEPT        0.000         1.000
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT        0.000         0.000
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        0.000         0.000
+ KONZ_L         0.000         0.000
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        1.000
+ KONZ_L         0.000         1.000
+
+
+     STARTING VALUES FOR ETHPHYS
+
+
+           NU
+              REPKO         KONZEPT
+              ________      ________
+                4.613         2.086
+
+
+           LAMBDA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO          1.000         0.000
+ KONZEPT        0.000         1.000
+
+
+           THETA
+              REPKO         KONZEPT
+              ________      ________
+ REPKO          0.000
+ KONZEPT        0.000         0.000
+
+
+           ALPHA
+              REPKO_L       KONZ_L
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        0.000         0.000
+ KONZ_L         0.000         0.000
+
+
+           PSI
+              REPKO_L       KONZ_L
+              ________      ________
+ REPKO_L        1.000
+ KONZ_L         0.000         1.000
+
+
+DIAGRAM INFORMATION
+
+  Use View Diagram under the Diagram menu in the Mplus Editor to view the diagram.
+  If running Mplus from the Mplus Diagrammer, the diagram opens automatically.
+
+  Diagram output
+    c:\local user data\antrag_physik\cesar0.3\cesar03_rq2_correlations_fixed.dgm
+
+     Beginning Time:  12:20:58
+        Ending Time:  12:20:58
+       Elapsed Time:  00:00:00
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2020 Muthen & Muthen
