@@ -2,5 +2,5 @@ Repository contents:
 - Analytic data and R as well as Mplus scripts for publication "Examining and Comparing the Relation Between Representational Competence and Conceptual Knowledge in Four Samples from Two Different Countries"
 
 - To run, please download all contents to the same folder.
-  Open the R script "2024-10-10_CESAR0.3_Analyses.Rmd" and run.
+  Open the R script **2024-10-10_CESAR0.3_Analyses.Rmd** and run.
 For research questions 1 & 2, the respective Mplus inputs and outputs are provided. The other Mplus inputs and outputs are created and run directly from within the R script.
