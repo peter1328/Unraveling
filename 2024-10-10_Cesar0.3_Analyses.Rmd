@@ -298,7 +298,7 @@ series is repko (1) konzept (2);
 
 ###Run analyses of created models 
 
-```{r run.dataanalyses}
+```{r run.dataanalyses2}
 
 #Write template into textfile
 write(LPARQ3, file = "LPA_RQ3.txt")
@@ -313,7 +313,7 @@ runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA/sampl
 
 ### Inspect results
 
-```{r LPA.results}
+```{r LPA.results2}
 
 RQ3_LPAs_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
 
@@ -703,7 +703,7 @@ series is repko (1) konzept (2);
 
 ### RQ3 LPA MG: Run analyses of created models MG
 
-```{r run.dataanalyses.MG}
+```{r run.dataanalyses1.MG}
 
 #Write template into textfile
 write(LPARQ3_MG, file = "LPA_RQ3_MG.txt")
@@ -718,7 +718,7 @@ runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multi
 
 ### RQ3 LPA MG: Inspect results
 
-```{r LPA.results.MG}
+```{r LPA.results.MG1}
 
 RQ3_LPAs_MG_3output <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup/rq3_lpa_multigroup_3profiles.out", what = c("summaries", "parameters", "class_counts", "lcCondMeans"))
 RQ3_LPAs_MG_3output #Fit indices
@@ -896,21 +896,21 @@ series is repko (1) konzept (2);
 
 ### RQ3 LPA MG: Run analyses of created models MG
 
-```{r run.dataanalyses.MG}
-#dir.create("CESAR03_RQ3_LPA_Multigroup_STEP2")
+```{r run.dataanalyses2.MG}
+dir.create("C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP2")
 
-writeLines(LPA_RQ3_MG_STEP2, "CESAR03_RQ3_LPA_Multigroup_STEP2/LPA_RQ3_MG_STEP2.inp")
+writeLines(LPA_RQ3_MG_STEP2, "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP2/LPA_RQ3_MG_STEP2.inp")
 
 #Run Mplus input files
-runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP2/", recursive = TRUE)
+runModels(target = "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP2/", recursive = TRUE)
 
 ```
 
 ### RQ3 LPA MG: Inspect results
 
-```{r LPA.results.MG}
+```{r LPA.results.MG2}
 
-RQ3_LPAs_MG_STEP2_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP2/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
+RQ3_LPAs_MG_STEP2_outputs <- readModels(target = "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP2/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
 
 # CESAR03_RQ3_LPA_Multigroup_3profiles Estimated using MLR 
 # Number of obs: 515, number of (free) parameters: 59 
@@ -1126,13 +1126,13 @@ series is repko (1) konzept (2);
 
 ### RQ3 LPA MG STEP3: Run analyses of created models MG
 
-```{r run.dataanalyses.MG}
-dir.create("CESAR03_RQ3_LPA_Multigroup_STEP3")
+```{r run.dataanalyses4.MG}
+dir.create("C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP3")
 
-writeLines(LPA_RQ3_MG_STEP3, "CESAR03_RQ3_LPA_Multigroup_STEP3/LPA_RQ3_MG_STEP3.inp")
+writeLines(LPA_RQ3_MG_STEP3, "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP3/LPA_RQ3_MG_STEP3.inp")
 
 #Run Mplus input files
-runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP3/", recursive = TRUE)
+runModels(target = "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP3/", recursive = TRUE)
 
 ```
 
@@ -1140,7 +1140,7 @@ runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multi
 
 ```{r LPA.results.MG.STEP3}
 
-RQ3_LPAs_MG_STEP3_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ3_LPA_Multigroup_STEP3/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
+RQ3_LPAs_MG_STEP3_outputs <- readModels(target = "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ3_LPA_Multigroup_STEP3/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
 
 # Difference Testing Using the Loglikelihood
 # 
@@ -1261,7 +1261,7 @@ iterators = s;
 s = 1:4;
 
 filename = "RQ5_LPA_[[c]]profiles_sample[[s]].inp";
-outputDirectory = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ5_LPA_DCAT/sample[[s]]/";
+outputDirectory = "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ5_LPA_DCAT/sample[[s]]/";
 
 [[/init]]
 
@@ -1424,7 +1424,7 @@ series is repko (1) konzept (2);
 
 ###Run analyses of created models 
 
-```{r run.dataanalyses}
+```{r run.dataanalyses1}
 
 #Write template into textfile
 write(LPARQ5_DCAT, file = "LPA_RQ5_DCAT.txt")
@@ -1433,15 +1433,15 @@ write(LPARQ5_DCAT, file = "LPA_RQ5_DCAT.txt")
 createModels("LPA_RQ5_DCAT.txt")
 
 #Run Mplus input files
-runModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ5_LPA_DCAT/", recursive = TRUE)
+runModels(target = "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ5_LPA_DCAT/", recursive = TRUE)
 
 ```
 
 ### Inspect results
 
-```{r LPA.results}
+```{r LPA.results1}
 
-RQ5_LPAs_DCAT_outputs <- readModels(target = "C:/local user data/CESAR0.3/Analysis_R/CESAR03_RQ5_LPA_DCAT/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
+RQ5_LPAs_DCAT_outputs <- readModels(target = "C:/local user data/CESAR0.3/StageIISubmission/RevisionI/CESAR03_RQ5_LPA_DCAT/", what = c("summaries", "parameters", "class_counts", "lcCondMeans"), recursive = TRUE)
 
 RQ5_lcCondMeans <-
 rbind(
@@ -1723,5 +1723,11 @@ ggsave("RQ5_Learning.jpg", dpi = 450, width = 12, height = 8)
 
 ```
 
+## Print session info
+
+```{r drddion.info}
+
+sessionInfo()
 
 ```
+
